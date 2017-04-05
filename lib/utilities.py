@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import multiprocessing as mp
 
 def to_grayscale(recon, original):
     return np.multiply(recon, original.std(0)) + original.mean(0)
@@ -25,3 +26,12 @@ def save_scatter(name, Y, X=None):
 
 def bucket(data, bucket_size):
     return [ np.mean(data[i:i+bucket_size]) for i in range(0, len(data), bucket_size) ]
+
+def get_num_cores():
+    return mp.cpu_count() - 1
+
+def create_pool(cores=None):
+    cores = get_num_cores() if cores is None else cores
+    # cores = cores - 10 if cores >= 16 else cores
+    print('creating %i threads' % cores)
+    return mp.get_context('fork').Pool(cores)

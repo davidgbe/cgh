@@ -1,5 +1,8 @@
 import numpy as np
-from math import ceil, pi, cos
+from math import ceil, pi
+import multiprocessing as mp
+from lib import utilities
+from lib.parallel_methods import generate_partial_interference_pattern
 
 class RealObject:
     def __init__(self, image, position_vec, width, height):
@@ -36,6 +39,8 @@ class RealObject:
         num_samples_y = ceil(width / sampling_size)
         num_samples_z = ceil(height / sampling_size)
 
+        points = []
+
         (x, y_start, z_start) = self.position_vec
         for i in range(num_samples_y):
             y = y_start + sampling_size * i
@@ -43,9 +48,10 @@ class RealObject:
             for j in range(num_samples_z):
                 z = z_start + sampling_size * j
                 img_j = int(self.image_shape[1] * j / num_samples_z)
-                yield (x, y, z, img_i, img_j)
+                points.append((x, y, z, img_i, img_j))
+        return points
 
-    def generate_interference_pattern(self, position_vec, width, height, wavelength=2.49 * 10**-5, sampling_size=.007, holo_scale=.007):
+    def generate_interference_pattern(self, position_vec, width, height, wavelength=2.5787 * 10**-5, sampling_size=.01, holo_scale=.035):
         image_shape = (ceil(width / holo_scale), ceil(height / holo_scale))
         image = np.zeros(image_shape[0] * image_shape[1]).reshape(image_shape)
 
@@ -53,19 +59,33 @@ class RealObject:
 
         k = 2 * pi / wavelength
 
-        last_i_p = 0
-        for x_p, y_p, z_p, img_i_p, img_j_p in holo_plate.iterate_over_points():
-            if last_i_p != img_i_p:
-                print(img_i_p)
-                last_i_p = img_i_p
-            for x, y, z, img_i, img_j in self.iterate_over_points(sampling_size):
-                r = np.sqrt((x - x_p)**2 + (y - y_p)**2 + (z - z_p)**2)
-                inc = self.color_given_img_coords(img_i, img_j) * cos(k * r)
-                holo_plate.inc_color(img_i_p, img_j_p, inc)
-        print(holo_plate.image)
-        holo_plate.image = holo_plate.image - holo_plate.image.min()
-        holo_plate.image = 255 / holo_plate.image.max() * holo_plate.image
+        holo_plate_indices = holo_plate.iterate_over_points()
+        source_points = self.iterate_over_points(sampling_size)
+
+        core_num = utilities.get_num_cores()
+        chunk_size = ceil(float(len(holo_plate_indices)) / core_num)
+        
+        partial_inteference_args = [(holo_plate_indices[i:i+chunk_size], source_points, image_shape, self.image, k) for i in range(0, len(holo_plate_indices), chunk_size)]
+        
+        pool = utilities.create_pool()
+        partial_holo_plates = pool.map_async(generate_partial_interference_pattern, partial_inteference_args).get()
+        pool.close()
+        pool.join()
+
+        for i in range(0, len(partial_holo_plates)):
+            print(partial_holo_plates[i])
+            utilities.save_image(partial_holo_plates[i], "partial_%d" % i)
+            image = np.add(image, np.mat(partial_holo_plates[i]))
+            print(image)
+
+        image = image / image.max() * 255
+        holo_plate.image = image
         return holo_plate
+
+
+
+
+
 
 
 

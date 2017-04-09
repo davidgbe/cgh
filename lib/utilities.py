@@ -33,4 +33,4 @@ def create_pool(cores=None):
     cores = get_num_cores() if cores is None else cores
     # cores = cores - 10 if cores >= 16 else cores
     print('creating %i threads' % cores)
-    return mp.get_context('spawn').Pool(cores)
+    return mp.get_context('fork').Pool(cores)

@@ -1,0 +1,4 @@
+#!/bin/bash
+#PBS -l nodes=1:ppn=10,walltime=00:03:00
+
+python3 run.py /staging/dgb/davidgbe

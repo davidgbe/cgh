@@ -73,10 +73,7 @@ class RealObject:
         pool.join()
 
         for i in range(0, len(partial_holo_plates)):
-            print(partial_holo_plates[i])
-            utilities.save_image(partial_holo_plates[i], "partial_%d" % i)
             image = np.add(image, np.mat(partial_holo_plates[i]))
-            print(image)
 
         image = image / image.max() * 255
         holo_plate.image = image

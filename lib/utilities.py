@@ -34,3 +34,13 @@ def create_pool(cores=None):
     # cores = cores - 10 if cores >= 16 else cores
     print('creating %i threads' % cores)
     return mp.get_context('fork').Pool(cores)
+
+# http://pythonforbiologists.com/index.php/measuring-memory-usage-in-python/
+def get_memory():
+    vals = psutil.virtual_memory()
+    percent_use = vals.available / vals.total
+    return percent_use
+
+def print_memory():
+    print('Percent memory usage:')
+    print(1.0 - get_memory())

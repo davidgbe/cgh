@@ -51,7 +51,7 @@ class RealObject:
                 points.append((x, y, z, img_i, img_j))
         return points
 
-    def generate_interference_pattern(self, position_vec, width, height, wavelength=2.5787 * 10**-5, sampling_size=.01, holo_scale=.035):
+    def generate_interference_pattern(self, position_vec, width, height, wavelength=2.5787 * 10**-5, sampling_size=.01, holo_scale=.1):
         image_shape = (ceil(width / holo_scale), ceil(height / holo_scale))
         image = np.zeros(image_shape[0] * image_shape[1]).reshape(image_shape)
 

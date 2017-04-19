@@ -1,4 +1,0 @@
-#!/bin/bash
-#PBS -l nodes=1:ppn=10,walltime=16:00:00
-cd cgh
-python3 run.py /staging/dgb/davidgbe offset_20_10 20 10 0.0035 0.0016

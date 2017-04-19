@@ -7,8 +7,8 @@ from lib import utilities
 
 class MNIST:
     @staticmethod
-    def get_image():
-        return MNIST.load_images_dataset('../datasets/train-images-idx3-ubyte')
+    def get_image(name='train-images-idx3-ubyte'):
+        return MNIST.load_images_dataset("../datasets/%s" % name)
 
     @staticmethod
     def load_images_dataset(rel_path, limit=1):
